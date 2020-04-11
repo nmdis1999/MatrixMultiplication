@@ -4,6 +4,8 @@
 #include <hpx/include/async.hpp>
 #include <hpx/include/parallel_for_each.hpp>
 #include <hpx/program_options.hpp>
+#include <hpx/include/lcos.hpp>
+#include <hpx/include/parallel_generate.hpp>
 
 #include <boost/range/counting_range.hpp>
 #include <boost/range/irange.hpp>
@@ -18,6 +20,12 @@
 using vec = std::vector<std::size_t>;
 using mat = std::vector<std::vector<size_t> >;
 
+const int MOD =  1000000007;
+const int rand_max = 10005;
+int rand_wrapper()
+{
+	return std::rand() % rand_max + 1;
+}
 int hpx_main(hpx::program_options::variables_map& vm)
 {
 	uint64_t rows = vm["rows"].as<std::size_t>();
@@ -26,18 +34,23 @@ int hpx_main(hpx::program_options::variables_map& vm)
 	
 	vec A(rows * rows);
 	vec B(cols * cols);
-
-	std::cout << "Matrix A is : \n";
 	size_t n = rows;
+
+	//fill A synchronously and sequentially
+	hpx::parallel::generate(hpx::parallel::execution::seq,
+                  std::begin(A), std::end(A), &rand_wrapper);
+	//fill A synchronously and sequentially
+	hpx::parallel::generate(hpx::parallel::execution::seq,
+                  std::begin(B), std::end(B), &rand_wrapper);
+	
+	std::cout << "Matrix A is : \n";
 	for (std::size_t i = 0; i < rows; i++)
 	{
 		for (std::size_t j = 0; j < rows; j++)
 		{
-			A[i * n + j] = rand() % 20 + 1;
-			B[i * n + j] = rand() % 20 + 1;
-			std::cout << A[i*n+j] << " ";
+			std::cout<<(A[i * n + j]) % MOD<<" ";
 		}
-		std::cout << "\n"; 
+		std::cout <<"\n";
 	}
 
 	std::cout << "Matrix B is : \n";
@@ -45,7 +58,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
 	{
 		for (std::size_t j = 0; j < rows; j++)
 		{
-			std::cout<<B[i * n + j]<<" ";
+			std::cout<<(B[i * n + j])%MOD<<" ";
 		}
 		std::cout <<"\n";
 	}
@@ -64,7 +77,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
 				res[i * n + j] = 0;
 				for (std::size_t k = 0; k < n; k++)
 				{
-					res[i * n + j] += A[i * n + k] * B[k * n + j];
+					res[i * n + j] += ((A[i * n + k] % MOD) * (B[k * n + j] % MOD));
+					res[i * n + j] %= MOD;
 				}  
 			}
 
@@ -76,7 +90,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
 	for (std:: size_t i = 0; i < n; i++)
 	{
 		for (std:: size_t j = 0; j < n; j++)
-			std::cout << res[i * n + j] <<" ";
+			std::cout << res[i * n + j] % MOD <<" ";
 		std::cout <<"\n";
 	}
 	return hpx::finalize();
