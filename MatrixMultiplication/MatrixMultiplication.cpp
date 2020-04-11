@@ -48,7 +48,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
 	{
 		for (std::size_t j = 0; j < rows; j++)
 		{
-			std::cout<<(A[i * n + j]) % MOD<<" ";
+			std::cout << (A[i * n + j]) % MOD <<" ";
 		}
 		std::cout <<"\n";
 	}
@@ -58,7 +58,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
 	{
 		for (std::size_t j = 0; j < rows; j++)
 		{
-			std::cout<<(B[i * n + j])%MOD<<" ";
+			std::cout << (B[i * n + j]) % MOD <<" ";
 		}
 		std::cout <<"\n";
 	}
